@@ -1,5 +1,6 @@
 # flask 웹 서버를 만들기 위해서 필수
 from flask import Flask, request
+from flask import send_file
 from flask import render_template
 
 # 앱 생성
@@ -14,6 +15,7 @@ def index():
 import common.db as db
 from flask import jsonify
 
+# 조회
 @app.route('/list')
 def list():
     dao = db.Dao()
@@ -22,6 +24,31 @@ def list():
     response = {'result' : True, 'data' : data}
     return jsonify(response)
 
+# 파일 다운로드
+@app.route('/listimagedownload/<pictureurl>')
+def listimagedownload(pictureurl):
+    file_name = 'static/img/' + pictureurl
+    print(file_name)
+    # file_name : 실제 파일의 경로(server쪽)
+    # mimetypes : 파일의 종류
+    # attachment_filename : 다운로드 되었을 때의 파일 이름(client쪽)
+    return send_file(file_name, mimetype='application/octect-stream',
+                     attachment_filename=pictureurl,
+                     as_attachment =True)
+
+# 전력량 계량기 등록
+@app.route('/insertElectricityMeter')
+def insertElectricityMeter():
+    # 이미지 가져오기
+    # ocr인식
+
+
+
+    dao = db.Dao()
+    data = dao.selectall()
+    # 출력의 형태 : json
+    response = {'result' : True, 'data' : data}
+    return jsonify(response)
 
 
 # 자신의 IP로 접속할 수 있도록 서버를 구동
