@@ -32,7 +32,6 @@ grant all privileges on electricityDB.* to 'flaskServer'@'localhost';
 -- User sehi의 권한 확인
 SHOW GRANTS FOR 'flaskServer'@localhost;
 
-
 -- electricity_meter_tb
 CREATE TABLE `electricityDB`.`electricity_meter_tb` (
 	`serial_cd`             VARCHAR(30)  NOT NULL COMMENT 'serial_cd', -- serial_cd
@@ -40,8 +39,8 @@ CREATE TABLE `electricityDB`.`electricity_meter_tb` (
 	`typename`              VARCHAR(6)   NULL     COMMENT 'typename', -- typename
 	`electricity_filename`  VARCHAR(100) NOT NULL COMMENT 'electricity_filename', -- electricity_filename
 	`region_cd`             VARCHAR(20)  NULL     COMMENT 'region_cd', -- region_cd
-	`electricity_save_date` DATE         NOT NULL COMMENT 'electricity_save_date', -- electricity_save_date
-	`del_flag`              VARCHAR(1)   NOT NULL COMMENT 'del_flag' -- del_flag
+	`electricity_save_date` DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'electricity_save_date', -- electricity_save_date
+	`del_flag`              VARCHAR(1)   NOT NULL DEFAULT 0 COMMENT 'del_flag' -- del_flag
 )
 COMMENT 'electricity_meter_tb';
 
@@ -57,7 +56,7 @@ CREATE TABLE `electricityDB`.`modem_tb` (
 	`modem_cd`        VARCHAR(30)  NOT NULL COMMENT 'modem_cd', -- modem_cd
 	`serial_cd`       VARCHAR(30)  NOT NULL COMMENT 'serial_cd', -- serial_cd
 	`modem_filename`  VARCHAR(100) NOT NULL COMMENT 'modem_filename', -- modem_filename
-	`modem_save_date` DATE         NOT NULL COMMENT 'modem_save_date' -- modem_save_date
+	`modem_save_date` DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'modem_save_date' -- modem_save_date
 )
 COMMENT 'modem_tb';
 
@@ -65,15 +64,13 @@ COMMENT 'modem_tb';
 ALTER TABLE `electricityDB`.`modem_tb`
 	ADD CONSTRAINT `PK_modem_tb` -- modem_tb 기본키
 		PRIMARY KEY (
-			`modem_cd`,  -- modem_cd
-			`serial_cd`  -- serial_cd
+			`modem_cd` -- modem_cd
 		);
 
 -- electricity_preprocessing_tb
 CREATE TABLE `electricityDB`.`electricity_preprocessing_tb` (
-	`pre_id`       NUMERIC      NOT NULL COMMENT 'pre_id', -- pre_id
+	`pre_id`       INT          NOT NULL COMMENT 'pre_id', -- pre_id
 	`serial_cd`    VARCHAR(30)  NOT NULL COMMENT 'serial_cd', -- serial_cd
-	`modem_cd`     VARCHAR(30)  NOT NULL COMMENT 'modem_cd', -- modem_cd
 	`pre_filename` VARCHAR(100) NOT NULL COMMENT 'pre_filename' -- pre_filename
 )
 COMMENT 'electricity_preprocessing_tb';
@@ -82,9 +79,14 @@ COMMENT 'electricity_preprocessing_tb';
 ALTER TABLE `electricityDB`.`electricity_preprocessing_tb`
 	ADD CONSTRAINT `PK_electricity_preprocessing_tb` -- electricity_preprocessing_tb 기본키
 		PRIMARY KEY (
-			`pre_id`,    -- pre_id
-			`serial_cd`  -- serial_cd
+			`pre_id` -- pre_id
 		);
+
+ALTER TABLE `electricityDB`.`electricity_preprocessing_tb`
+	MODIFY COLUMN `pre_id` INT NOT NULL AUTO_INCREMENT COMMENT 'pre_id';
+
+ALTER TABLE `electricityDB`.`electricity_preprocessing_tb`
+	AUTO_INCREMENT = 1;
 
 -- modem_tb
 ALTER TABLE `electricityDB`.`modem_tb`
