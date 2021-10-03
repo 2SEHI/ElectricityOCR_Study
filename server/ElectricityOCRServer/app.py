@@ -5,6 +5,7 @@ from flask import render_template
 
 # 앱 생성
 app = Flask(__name__)
+app.config['JSON_AS_ASCII'] = False
 
 # 요청 과 요청을 받으면 처리할 함수를 생성
 # 포트번호까지의 요청이 오면 templates 디렉토리의 index.html을 출력
@@ -19,9 +20,9 @@ from flask import jsonify
 @app.route('/list')
 def list():
     dao = db.Dao()
-    data = dao.selectall()
+    result, data = dao.select_all()
     # 출력의 형태 : json
-    response = {'result' : True, 'data' : data}
+    response = {'result' : result, 'data' : data}
     return jsonify(response)
 
 # 파일 다운로드
@@ -37,19 +38,14 @@ def listimagedownload(pictureurl):
                      as_attachment =True)
 
 # 전력량 계량기 등록
-@app.route('/insertElectricityMeter')
-def insertElectricityMeter():
-    # 이미지 가져오기
-    # ocr인식
-
-
-
+@app.route('/detail/<serial_id>')
+def detail(serial_id):
     dao = db.Dao()
-    data = dao.selectall()
+    result, data = dao.select_one(serial_id)
+    print(data["supply_type"])
     # 출력의 형태 : json
-    response = {'result' : True, 'data' : data}
+    response = {'result' : result, 'data' : data}
     return jsonify(response)
-
 
 # 자신의 IP로 접속할 수 있도록 서버를 구동
 # 회사 내에서만 접속가능하게 하고 싶다면 host를 변경
