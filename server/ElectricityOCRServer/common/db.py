@@ -14,6 +14,7 @@ class Dao:
         left join modem_tb 
         on modem_tb.serial_cd = electricity_meter_tb.serial_cd 
         where electricity_meter_tb.del_flag = 0
+        ORDER BY electricity_save_date DESC;
         '''
 
         self.__SELECT_ONE = '''
