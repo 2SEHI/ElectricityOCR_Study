@@ -1,35 +1,35 @@
 -- electricity_meter_TB 전력량계량기 테이블
--- serial_cd 제조번호 pk serial_cd_pk
--- supply_type 단상 타입 
--- typename 타입명
--- electricity_filename
--- region_cd 지역코드
--- electricity_save_date 저장날짜
--- del_flag 삭제 플래그
+-- 	serial_cd 전력량계 제조번호 
+-- 	supply_type 저압배전방식
+-- 	typename 전력량계 종류
+-- 	electricity_filename 전력량계량기 원본이미지파일명
+-- 	region_cd 지역코드
+-- 	electricity_save_date 전력량계 저장날짜
+-- 	del_flag 삭제 플래그
 
 -- modem_tb 모뎀 정보 테이블
--- modem_cd 모뎀 정보 pk
--- serial_cd 제조번호 fk
--- modem_filename 모뎀 원본 파일명
--- modem_save_date 모뎀 저장날짜
+-- 	modem_cd 모뎀 정보 pk
+-- 	serial_cd 제조번호 fk
+-- 	modem_filename 모뎀 원본이미지파일명
+-- 	modem_save_date 모뎀 저장날짜
 
--- electricity_preprocessing_tb 전력량 전처리 파일 테이블
--- pre_id 시퀀스 번호 pk
--- serial_cd 제조번호 fk
--- pre_filename
+-- electricity_preprocessing_tb 전력량 전처리 이미지파일 테이블
+-- 	pre_id 시퀀스 번호 pk
+-- 	serial_cd 전력량계 제조번호 fk
+-- 	pre_filename 전처리과정 이미지파일명
 
 
 -- 데이터베이스 생성
 create database electricityDB;
 -- 데이터베이스 확인
 show databases;
--- sehiDB 사용
+-- electricityDB 사용
 use electricityDB;
--- User sehi 생성
+-- User 생성
 create user 'flaskServer'@'localhost' identified by '20210420';
--- User localhost로 접속한 sehi에게 sehiDB에 대한 권한 부여
+-- User localhost로 접속한 flaskServer에게 electricityDB에 대한 권한 부여
 grant all privileges on electricityDB.* to 'flaskServer'@'localhost';
--- User sehi의 권한 확인
+-- User 권한 확인
 SHOW GRANTS FOR 'flaskServer'@localhost;
 
 -- electricity_meter_tb
