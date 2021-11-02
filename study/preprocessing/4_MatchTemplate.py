@@ -1,8 +1,10 @@
+# -*- coding: utf-8 -*-
+import sys
+print(sys.version)
 import cv2
 import numpy as np
-from pytesseract import *
+# from pytesseract import
 import re
-import matplotlib.pyplot as plt
 
 class MatchTemplate:
     def __init__(self):
@@ -78,7 +80,7 @@ class MatchTemplate:
         for contour in contours:
             (x, y, w, h) = cv2.boundingRect(contour)
             area = cv2.contourArea(contour=contour)
-            
+
             # 외곽선 크기가 너무 작으면 무시
             # TODO 공통값 찾기
             if area < 50:
@@ -94,7 +96,7 @@ class MatchTemplate:
 
     # 선택한 Type영역과 매칭하는 영역찾기
     def getTextArea(self, templ, src):
-        
+
         # G-Type 표시 영역 찾기
         # TM_CCORR_NORMED : 정규화된 상관관계 방법(TM_CCORR_NORMED) 밝은곳이 매칭지점
         result = cv2.matchTemplate(resized_src, templ, cv2.TM_CCORR_NORMED)
@@ -114,7 +116,7 @@ class MatchTemplate:
 
         # 문자영역
         textarea = src[ob_y:ob_y + ob_w, ob_x:ob_x + ob_h]
-        
+
         # templ과 문자 추출 대상 영역 띄우기
         cv2.imshow("textarea", textarea)
         cv2.waitKey(0)
@@ -128,9 +130,9 @@ class MatchTemplate:
         return textarea
 
 # 원본 이미지경로
-IMAGE_DIR = '../image_sample/'
+IMAGE_DIR = '../data/image_sample/ElecricitiyMeter'
 # 읽어올 원본 이미지 파일 이름
-src_image_name = 'image00003'
+src_image_name = '847207D64AF9_P1134'
 
 # 매칭할 이미지 경로
 MATCH_IMAGE_DIR = '../match_image/'
@@ -157,7 +159,7 @@ if __name__ == "__main__":
     if templ is not None :
         # 문자영역의 이미지 가져오기
         textarea = matchTemplate.getTextArea(templ, resized_src)
-        
+
         # 문자영역이미지 전처리
         pre_img = matchTemplate.preprocessing(textarea)
 
