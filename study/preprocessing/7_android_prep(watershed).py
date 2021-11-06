@@ -32,28 +32,24 @@ class prep:
     def find_8seg(self):
 
         src_roi = dict()    # 좌표를 저장할 딕셔너리 생성
-        src_file = '.'+self.file_path + '/' + self.src_name + '.jpg'
-        print(f"- 수행파일:{src_file}")  # 확인
+        # src_file = '.'+self.file_path + '/' + self.src_name + '.jpg'
+        print(f"- 수행파일:{self.file_path}")  # 확인
 
         # 좌표를 저장할 경로 생성
-        roi_path = './static/img'  #+ self.src_name
-        self.create_path(roi_path)
-        print(f"- 저장경로:{roi_path}")
+        self.create_path(self.file_path)
+        print(f"- 저장경로:{self.file_path}")
 
-
-        ## 이미지 읽어오기 - GrayScale
-        src = cv2.imread(self.src_file, cv2.IMREAD_GRAYSCALE)
-
+        # 이미지 읽어오기 - GrayScale
+        src = cv2.imread(self.file_path + '/' + self.src_name + '.jpg', cv2.IMREAD_GRAYSCALE)
         if src is None:
             print('Image load failed!')
-            #sys.exit()
+            # sys.exit()
 
 
-        ## Histogram equalization
+        # Histogram equalization
         src = cv2.equalizeHist(src)
 
-
-        ## Binary
+        # Binary
         # parameter
         max_val = 255
         C = -10
@@ -65,19 +61,18 @@ class prep:
 
         src = cv2.adaptiveThreshold(src, max_val, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV,
                                            block_size, C)
-        cv2.imwrite(roi_path + '/' + self.src_name + '_binary' + '.jpg', src)   # 저장
-
-
-        ## contouring
+        # 이미지 저장 : 이진화 처리
+        cv2.imwrite(self.file_path + '/' + self.src_name + '_binary' + '.jpg', src)
+        # contouring
         contours, hierarchy = cv2.findContours(src, mode=cv2.RETR_LIST, method=cv2.CHAIN_APPROX_TC89_L1)
         src_check = cv2.imread(self.src_file, cv2.IMREAD_COLOR)
         src_contour = cv2.drawContours(src_check, contours, contourIdx=-1, color=(0, 255, 0), thickness=4)
-        cv2.imwrite(roi_path + '/' + self.src_name + '_contour' + '.jpg', src_contour)   # 저장
-
+        cv2.imwrite(self.file_path + '/' + self.src_name + '_contour' + '.jpg', src_contour)
 
         # 추려낸 contours 대상으로 사각형 그리기
         data_roi_coo = set()   # 좌표 저장할 set
         serial_id = ""
+        # 컨투어 영역의 개수만큼 반복
         for con in contours:
             perimeter = cv2.arcLength(con, True)    # 외곽선 둘레 길이
 
@@ -97,32 +92,29 @@ class prep:
                 # 외곽선 근사화하여 좌표 반환
                 approx = cv2.approxPolyDP(con, epsilon * perimeter, True)
 
-                # 4개의 코너를 가지는 Edge Contour에 대해 사각형 추출
+                # 4개의 코너를 가지는 Edge Contour 에 대해 사각형 추출
                 if len(approx) == 4:
                     x, y, w, h = cv2.boundingRect(con)        # 좌표를 감싸는 최소면적 사각형 정보 반환
-
 
                     src_w = src.shape[1]
                     src_h = src.shape[0]
 
+                    print('ROI 좌표 조건 체크 start------')
                     # 8-segment ROI 특정
                     if (w < 0.15 * src_w) or (w > 0.6 * src_w) or (h > 0.2 * src_h) or \
                             (w / h > 3.5) or (w / h < 1.8) or \
                             (y + h > 0.85 * src_h) or (y < 0.1 * src_h) or (x + w > 0.85 * src_w) or (
                             x < 0.15 * src_w):
+                        print('[x]ROI 좌표 조건 체크----위치 범위를 벗어남')
                         break
 
                     # ROI 좌표를 튜플로 저장함
                     data_roi_coo.add((x, y, w, h))
-
+                    print('[o]ROI 좌표 조건 체크----위치 범위 내에 존재')
                     # 사각형 그리기
                     src_check = cv2.imread(self.src_file, cv2.IMREAD_COLOR)
                     rect = cv2.rectangle(src_check, (x, y), (x+w, y+h), (255, 0, 255), thickness=4)
-                    # cv2.imwrite(roi_path + '/' + self.src_name + '_rect' + '.jpg', rect)  # 저장
-                    # cv2.imshow('roi', rect)
-                    # key = cv2.waitKey()
-                    # if key == 27:
-                    #     break
+                    cv2.imwrite(self.file_path + '/' + self.src_name + '_rect' + '.jpg', rect)
 
                     # 최소 사각형 추출
                     ((x1, y1), (w1, h1), angle) = cv2.minAreaRect(con)
@@ -139,8 +131,7 @@ class prep:
                     rot_mat = cv2.getRotationMatrix2D(image_center, angle, 1.0)
                     src_rot = cv2.warpAffine(src_check, rot_mat, src_check.shape[1::-1], flags=cv2.INTER_LINEAR,
                                             borderValue=(255, 255, 255))
-                    cv2.imwrite(roi_path + '/' + self.src_name + '_rot' + '.jpg', src_rot)  # 저장
-
+                    cv2.imwrite(self.file_path + '/' + self.src_name + '_rot' + '.jpg', src_rot)
                     src_rot = cv2.cvtColor(src_rot, cv2.COLOR_BGR2GRAY)
 
                     # 이미지 투시변환 (사각형 두개 이용)
@@ -165,7 +156,8 @@ class prep:
 
                     mtrx = cv2.getPerspectiveTransform(pts1, pts2)
                     dst = cv2.warpPerspective(src_rot, mtrx, (cols, rows))
-                    # 투시변환 종료
+                    cv2.imwrite(self.file_path + '/' + self.src_name + '_per' + '.jpg', src_rot)
+
                     # 회전 & 투시 변환 후 이진화
                     # img = cv2.adaptiveThreshold(dst, max_val, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV,
                     #                             block_size, 15)
@@ -173,7 +165,7 @@ class prep:
                     water_img = self.watershed(dst)
 
                     # OCR 수행
-                    config = ('-l kor+eng --oem 1 --psm 3')
+                    config = ('-l eng --oem 1 --psm 3')
                     text = pytesseract.image_to_string(water_img, config=config)
                     print(text)
                     pat = re.compile('(\d{2})\W+(\d{2})\W+(\d{7})\W+(\d{4})')
@@ -183,7 +175,6 @@ class prep:
                     else:
                         serial_id = ''.join(mc[0])
                         break
-
         src_roi[self.src_name] = data_roi_coo
 
         return src_roi, serial_id
@@ -216,17 +207,11 @@ class prep:
         :return: 32-bit single-channel image (map) of markers.
         """
         img = cv2.cvtColor(gray, cv2.COLOR_GRAY2RGB)
-        # cv2.imwrite('{}.png'.format(np.random.randint(1000)), src)
-        # gray = src.copy()
-        # img = cv2.cvtColor(gray, cv2.COLOR_GRAY2BGR)
-        # h, w = gray.shape[:2]
-        # block_size = (min(h, w) // 4 + 1) * 2 + 1
-        # thresh = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, block_size, 0)
         _ret, thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-        # ret, thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
-        cv2.imshow('thresh', thresh)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
+        cv2.imwrite(self.file_path + '/' + self.src_name + '_thresh' + '.jpg', thresh)
+        # cv2.imshow('thresh', thresh)
+        # cv2.waitKey(0)
+        # cv2.destroyAllWindows()
 
         # noise 제거
         kernel = np.ones((1, 1), np.uint8)
@@ -235,25 +220,28 @@ class prep:
         # 확실한 배경 찾기
         # 흰색 영역이 줄어듦
         sure_bg = cv2.dilate(opening, kernel, iterations=3)
-        cv2.imshow('sure_bg', sure_bg)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
+        cv2.imwrite(self.file_path + '/' + self.src_name + '_sure_bg' + '.jpg', sure_bg)
+        # cv2.imshow('sure_bg', sure_bg)
+        # cv2.waitKey(0)
+        # cv2.destroyAllWindows()
+
         # 확실한 전경 찾기
         dist_transform = cv2.distanceTransform(opening, cv2.DIST_L2, 3)
         # _ret, sure_fg = cv2.threshold(dist_transform, 0.2 * dist_transform.max(), 255, cv2.THRESH_BINARY)
         _ret, sure_fg = cv2.threshold(dist_transform, 0.8 * dist_transform.max(), 255, 0)
-
-        cv2.imshow('sure_fg', sure_fg)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
+        cv2.imwrite(self.file_path + '/' + self.src_name + '_sure_fg' + '.jpg', sure_fg)
+        # cv2.imshow('sure_fg', sure_fg)
+        # cv2.waitKey(0)
+        # cv2.destroyAllWindows()
 
         # unknown : 배경에서 전경을 제외하여 확실하지 않은 영역 찾기
         sure_fg = np.uint8(sure_fg)
         unknown = cv2.subtract(sure_bg, sure_fg)
+        cv2.imwrite(self.file_path + '/' + self.src_name + '_unknown' + '.jpg', unknown)
+        # cv2.imshow('unknown', unknown)
+        # cv2.waitKey(0)
+        # cv2.destroyAllWindows()
 
-        cv2.imshow('unknown', unknown)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
         # Marker label
         lingret, marker_map = cv2.connectedComponents(sure_fg)
         # Add one to all labels so that sure background is not 0, but 1
@@ -264,7 +252,9 @@ class prep:
         marker_map = cv2.watershed(img, marker_map)
         print(np.unique(marker_map))
         img[marker_map == -1] = [255, 0, 0]
-        cv2.imshow('Watershed', img)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
+
+        cv2.imwrite(self.file_path + '/' + self.src_name + '_watershed.jpg' + '.jpg', img)
+        # cv2.imshow('Watershed', img)
+        # cv2.waitKey(0)
+        # cv2.destroyAllWindows()
         return img
