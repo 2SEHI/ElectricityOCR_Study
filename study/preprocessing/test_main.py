@@ -1,14 +1,11 @@
-import sys, os
-from model.OCRModel import OCRModel
-
-# 상위 경로(Project/)를 system PATH에 추가
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-
-if __name__ == '__main__':
-    ocrModel = OCRModel()
-    #
-    #file_list = os.listdir('../static/img')
-    #for filename in file_list[:1]:
-    #    result_roi, sava_images, serial_cd = ocrModel.get_roi_images('../static/img', filename)
-    filename = "01232009862_P181.jpg"
-    result_roi, sava_images, serial_cd = ocrModel.get_roi_images('../static/img', filename)
+import pytesseract
+print(pytesseract.get_tesseract_version())
+#
+# text_img = '2'
+# real_serial_id_list = [['1','a'],['2','b']]
+# file_and_serialId = list(filter(lambda x: text_img == x[0], real_serial_id_list))
+# if file_and_serialId :
+#     filename, serial_id = file_and_serialId[0]
+#     print(filename, serial_id)
+#
+#
